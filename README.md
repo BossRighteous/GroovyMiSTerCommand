@@ -12,31 +12,34 @@ an HTTP RPC command against.
 ```
 Filename:
 {Text Title}.{GroovyMisterCommand}
-Contents: UTF-8 text/json
-{"cmd": "", "args": [""], "ver":1}
+Contents: UTF-8 Text
+{UtilKeyword | MameSlug}
 
 Examples:
-
+// Game Slug
 Hanabi de Doon! - Don-chan Puzzle.gmc
-{"cmd": "load", "args": ["doncdoon"], "ver":1}
+doncdoon
 
+// Util Keywords
 Test Connection.gmc
-{"cmd": "connect", "args": [], "ver":1}
+connect
 
 Unload Rom.gmc
-{"cmd": "unload", "args": [], "ver":1}
+unload
 
 Kill Server Process.gmc
-{"cmd": "kill", "args": [], "ver":1}
+kill
 
 Reboot Host Machine.gmc
-{"cmd": "reboot", "args": [], "ver":1}
+reboot
 
 Shutdown Host Machine.gmc
-{"cmd": "shutdown", "args": [], "ver":1}
+shutdown
 ```
 
-Despite being JSON text, the file size should still be under the FS block-size, so no real need to minimize these file encodings that I can see.
+This is a minimal amount of information and should provide just enough data for the server to execute tasks without security concerns.
+
+I initially considered a {command, args} schema but limiting args to single 'word' will make verification much easier.
 
 #### Groovy MiSTer UX
 
@@ -51,7 +54,7 @@ This will open a file browser interface, pointing to rom-like directory
 ```
 
 Upon GMC file selection the core may
-- load the binary contents into string/chars CMD_STR
+- load the contents into string/chars CMD_STR
 - Check new ini/env key GROOVY_MAME_HOST (Example: "192.168.1.128")
 - Execute syncronous HTTP POST
   - Address: "http://{GROOVY_MAME_HOST}:32105/cmd"
@@ -80,7 +83,7 @@ Because the MAME rom list is massive I am proposing using either symlink or pure
         [Full Titles Set].gmc
 ```
 
-To keep the Core's command logic simplified, companion server-side scripts can be used to populate this original listing set as well as duped categorizational directories
+To keep the Core's command logic simplified, companion server-side scripts can be used to populate this original listing set as well as duped categorizational directories. It is unclear to me if a file browsing interface would support symlinks but <1kb file dupes even in the thousands aren't the end of the world.
 
 ```
 /media/fat/games/GroovyMAME/
@@ -96,6 +99,8 @@ To keep the Core's command logic simplified, companion server-side scripts can b
         CPS2/
         ...
 ```
+
+I've noted that .zip files are browseable as filesystem, so a single portable zip may reduce FS block fill and make the build/transfer simpler.
 
 This would allow the server binary to run a CLI command routine that
 - Asks for category/filter preferences
@@ -119,18 +124,23 @@ The server binary itself should be placed in the GroovyMAME application director
 
 On execution the server will listen generically to any host, but specifically on port 32105. This port allows for additional GroovyMiSTer UDP expansion but occupies similar range.
 
-The server listens for commands on the ` POST /cmd` endpoint. It expects data as defined and generated for the .gmc spec.
+The server listens for commands on the ` POST /cmd` endpoint. It expects basic single word text data as defined and generated for the .gmc spec.
 Based on the command, a single subprocess may be terminated or replaced.
 
-For example: a ROM load command will
-- Check for existing GroovyMAME subprocess, exit if operational
-- Check GroovyMAME executable for game slug verify
-    - Return HTTP error if not verifiable
-- Attempt to create new GroovyMAME subprocess based on game's slug
+For example: a command will
+- Compare POST body command to known UtilKeywords
+- Execute Utility routine on match
+- Else pattern match for MAME game slug
+    - Check GroovyMAME executable for game slug verification
+        - Fail if not verifiable
+    - Check for existing GroovyMAME subprocess, exit if operational
+    - Attempt to create new GroovyMAME subprocess based on game slug
+    - Runs as goroutine/async
+- Else fail
 - Return HTTP response
 
 The CLI app must be executed/ran on the Server before the GroovyMiSTer core can access it.
 
-For a delegated mini-pc this could be run on startup. The server process is extremely light weight and can safely run in the background without significant resource drain. \
+For a delegated mini-pc this could be run on startup. The server process is extremely light weight and can safely run in the background without significant resource drain.
 
 PC, OSX, and Linux builds are possible from the single go repository.
