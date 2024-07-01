@@ -1,0 +1,6 @@
+{
+    "command": "mame",
+    "args": [
+        "10yard"
+    ]
+}
