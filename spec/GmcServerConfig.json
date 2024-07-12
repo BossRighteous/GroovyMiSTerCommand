@@ -1,20 +1,11 @@
 {
+    "mister_host": "192.168.1.255",
     "commands": [
         {
-            "command": "mame",
-            "working_dir": "/path/containing/mame",
-            "cmd": "mame ${MACHINE_NAME}",
-            "args": [
-                {
-                    "var": "MACHINE_NAME",
-                    "pattern?": "^[A-Za-z0-9_-]*$"
-                }
-            ],
-            "_cmd_samples": {
-                "groovymame_unix": "./mame ${MACHINE_NAME}",
-                "groovymame_windows": "./mame.exe %MACHINE_NAME%",
-                "retroarch_unix": "retroarch -L /path/to/libretro/core.so ${MACHINE_NAME}.zip"
-            }
+            "cmd": "mame",
+            "work_dir": "/path/containing/groovymame",
+            "exec_bin": "./mame",
+            "exec_args": ["${MACHINE_NAME}"]
         }
     ]
 }

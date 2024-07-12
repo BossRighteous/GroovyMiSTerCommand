@@ -1,6 +1,6 @@
 {
-    "command": "mame",
-    "args": [
-        "10yard"
-    ]
+    "cmd": "mame",
+    "vars": {
+       "MACHINE_NAME": "10yard"
+    }
 }
