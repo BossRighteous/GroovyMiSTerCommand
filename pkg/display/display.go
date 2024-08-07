@@ -26,6 +26,7 @@ func (disp *MiSTerDisplay) SafeClose() {
 		disp.Timer.Stop()
 		disp.IsRunning = false
 		disp.Client.CmdClose()
+		time.Sleep(time.Millisecond * 250)
 	}
 }
 

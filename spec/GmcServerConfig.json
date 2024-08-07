@@ -7,5 +7,19 @@
             "exec_bin": "./mame",
             "exec_args": ["${MACHINE_NAME}"]
         }
-    ]
+    ],
+    "generators": {
+        "mame": {
+            "roms_dir": "",
+            "mamelist_path": "./mamelist.json"
+        },
+        "retroarch": {
+            "playlists_dir": ""
+        },
+        "directory": {
+            "dir": "",
+            "recursive": true,
+            "exclude_extensions": ["xml", "json", "txt", "jpg", "png"]
+        }
+    }
 }

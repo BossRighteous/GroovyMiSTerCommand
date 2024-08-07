@@ -23,6 +23,8 @@ go.work.sum
 
 cmd/cmdtest
 cmd/romparser
+Groovy
 dev-notes.txt
 config.json
+mamelist.json
 printargs.sh

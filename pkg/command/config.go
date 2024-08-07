@@ -12,9 +12,31 @@ type GMCConfigCommand struct {
 	ExecArgs []string `json:"exec_args"`
 }
 
+type GMCConfigMameGenerator struct {
+	RomsDir      string `json:"roms_dir"`
+	MamelistPath string `json:"mamelist_path"`
+}
+
+type GMCConfigRetroarchGenerator struct {
+	PlaylistsDir string `json:"playlists_dir"`
+}
+
+type GMCConfigDirectoryGenerator struct {
+	Dir               string   `json:"dir"`
+	Recursive         bool     `json:"recursive"`
+	ExcludeExtensions []string `json:"exclude_extensions"`
+}
+
+type GMCConfigGenerators struct {
+	Mame      GMCConfigMameGenerator      `json:"mame"`
+	Retroarch GMCConfigRetroarchGenerator `json:"retroarch"`
+	Directory GMCConfigDirectoryGenerator `json:"directory"`
+}
+
 type GMCConfig struct {
-	MisterHost string             `json:"mister_host"`
-	Commands   []GMCConfigCommand `json:"commands"`
+	MisterHost string              `json:"mister_host"`
+	Commands   []GMCConfigCommand  `json:"commands"`
+	Generators GMCConfigGenerators `json:"generators"`
 	CmdMap     map[string]GMCConfigCommand
 }
 
@@ -28,10 +50,9 @@ func LoadConfigFromPath(path string) (*GMCConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	config.CmdMap = make(map[string]GMCConfigCommand)
 	for i := range config.Commands {
 		cmd := config.Commands[i]
-		config.CmdMap = make(map[string]GMCConfigCommand)
 		config.CmdMap[cmd.Cmd] = cmd
 	}
 

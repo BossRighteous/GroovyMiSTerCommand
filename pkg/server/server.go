@@ -3,9 +3,8 @@ package server
 import (
 	"fmt"
 	"net"
-	"time"
 
-	"github.com/BossRighteous/GroovyMiSTerHTTP/pkg/command"
+	"github.com/BossRighteous/GroovyMiSTerCommand/pkg/command"
 )
 
 type UdpClient struct {
@@ -15,20 +14,11 @@ type UdpClient struct {
 }
 
 func (client *UdpClient) SendBeacon() {
-	go func() {
-		fmt.Println("Preparing Beacon Send every 2 second")
-		freq, _ := time.ParseDuration("2s")
-		ticker := time.NewTicker(time.Duration(freq))
-		for {
-			<-ticker.C
-
-			fmt.Println("Sending Beacon")
-			_, err := client.conn.WriteTo([]byte{0}, client.addr)
-			if err != nil {
-				fmt.Println("UDP BEACON ERROR", err)
-			}
-		}
-	}()
+	fmt.Println("Sending Beacon")
+	_, err := client.conn.WriteTo([]byte{0}, client.addr)
+	if err != nil {
+		fmt.Println("UDP BEACON ERROR", err)
+	}
 }
 
 func (client *UdpClient) Listen(cmdChan chan command.GroovyMiSTerCommand) {
@@ -70,7 +60,5 @@ func StartUdpClient(host string, cmdChan chan command.GroovyMiSTerCommand) *UdpC
 	client.addr = addr
 
 	client.Listen(cmdChan)
-	client.SendBeacon()
-
 	return client
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 type RunResult struct {
@@ -25,12 +26,8 @@ func (cmdr *CommandRunner) Cancel() error {
 		fmt.Println("killing process")
 		err := cmdr.Cmd.Process.Kill()
 		cmdr.Cmd = nil
+		time.Sleep(time.Millisecond * 250)
 
-		/*cmdr.ResultChan <- RunResult{
-			Code:        -1,
-			Message:     "Process Terminated",
-			BlitMessage: false,
-		}*/
 		return err
 	}
 	return nil

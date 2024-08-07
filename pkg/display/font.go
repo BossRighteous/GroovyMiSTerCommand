@@ -93,7 +93,9 @@ func DrawText(text []string, rect image.Rectangle, bg *image.Uniform) *image.NRG
 }
 
 func TextToBGR8(txtLines []string) *BGR8 {
-	nrgba := DrawText(txtLines, ScreenRect, bgImg)
+	padding := []string{"", ""}
+	padded := append(padding, txtLines...)
+	nrgba := DrawText(padded, ScreenRect, bgImg)
 	bgr := NewBGR8(ScreenRect)
 	draw.Draw(bgr, ScreenRect, nrgba, image.Point{}, draw.Src)
 	return bgr

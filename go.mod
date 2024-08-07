@@ -1,4 +1,4 @@
-module github.com/BossRighteous/GroovyMiSTerHTTP
+module github.com/BossRighteous/GroovyMiSTerCommand
 
 go 1.18
 
