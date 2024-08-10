@@ -42,8 +42,8 @@ func main() {
 	}
 }
 
-func runGenerateRetroArch(_ *command.GMCConfig) {
-	fmt.Println("generate:retroarch not yet implemented")
+func runGenerateRetroArch(config *command.GMCConfig) {
+	generators.GenerateRetroarchGMCs(config.Generators.Retroarch)
 }
 
 func runGenerateMAME(config *command.GMCConfig) {

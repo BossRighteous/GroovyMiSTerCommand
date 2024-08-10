@@ -21,13 +21,13 @@ type MameListGame struct {
 
 type MameList []MameListGame
 
-type MameCommandVars struct {
+type MameGMCVars struct {
 	MachineName string `json:"MACHINE_NAME"`
 }
 
-type MameCmd struct {
-	Cmd  string          `json:"cmd"`
-	Vars MameCommandVars `json:"vars"`
+type MameGMC struct {
+	Cmd  string      `json:"cmd"`
+	Vars MameGMCVars `json:"vars"`
 }
 
 func loadMamelist(path string) (*MameList, error) {
@@ -51,25 +51,9 @@ func verifyRomExists(romsDir string, name string) bool {
 	return false
 }
 
-func writeGMCtoDir(dir string, filename string, content []byte) {
-	os.MkdirAll(dir, os.ModePerm)
-	gmcPath := filepath.Join(dir, filename+".gmc")
-	fo, err := os.Create(gmcPath)
-	if err != nil {
-		fmt.Printf("Unable to create file, may exist %s\n", gmcPath)
-		return
-	}
-	length, err := fo.Write(content)
-	if err != nil || length != len(content) {
-		log.Fatal(err)
-	}
-	if err := fo.Close(); err != nil {
-		log.Fatal(err)
-	}
-}
-
 func GenerateMameGMCs(config command.GMCConfigMameGenerator) {
-	mamelist, err := loadMamelist(config.MamelistPath)
+	mamelistPath := filepath.Clean(config.MamelistPath)
+	mamelist, err := loadMamelist(mamelistPath)
 	if err != nil {
 		fmt.Println("Mamelist could not be loaded from JSON path")
 		log.Fatal(err)
@@ -91,28 +75,29 @@ func GenerateMameGMCs(config command.GMCConfigMameGenerator) {
 	yearsPath := filepath.Join(gmcPath, "Years")
 	os.MkdirAll(yearsPath, os.ModePerm)
 
+	romsDir := filepath.Clean(config.RomsDir)
 	for _, item := range *mamelist {
 		//fmt.Println(item.Name)
-		exists := verifyRomExists(config.RomsDir, item.Name)
+		exists := verifyRomExists(romsDir, item.Name)
 		if !exists {
 			//fmt.Println(item.Name, "not found")
 			continue
 		}
 
-		cmd := MameCmd{
+		gmc := MameGMC{
 			Cmd: "mame",
-			Vars: MameCommandVars{
+			Vars: MameGMCVars{
 				MachineName: item.Name,
 			},
 		}
-		jsonBytes, err := json.Marshal(cmd)
+		jsonBytes, err := json.Marshal(gmc)
 		if err != nil {
 			fmt.Println("error:", err)
 		}
 
-		writeGMCtoDir(allPath, item.Description, jsonBytes)
-		writeGMCtoDir(filepath.Join(genresPath, item.Genre), item.Description, jsonBytes)
-		writeGMCtoDir(filepath.Join(manusPath, item.Manufacturer), item.Description, jsonBytes)
-		writeGMCtoDir(filepath.Join(yearsPath, item.Year), item.Description, jsonBytes)
+		WriteGMCtoDir(allPath, item.Description, jsonBytes)
+		WriteGMCtoDir(filepath.Join(genresPath, item.Genre), item.Description, jsonBytes)
+		WriteGMCtoDir(filepath.Join(manusPath, item.Manufacturer), item.Description, jsonBytes)
+		WriteGMCtoDir(filepath.Join(yearsPath, item.Year), item.Description, jsonBytes)
 	}
 }
