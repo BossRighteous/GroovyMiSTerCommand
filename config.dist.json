@@ -1,0 +1,50 @@
+{
+    "mister_host": "192.168.0.169",
+    "commands": [
+        {
+            "cmd": "mame",
+            "work_dir": "C:\\Users\\bossr\\groovymame\\groovymame_0266.221d_win-7-8-10",
+            "exec_bin": "mame.exe",
+            "exec_args": ["${MACHINE_NAME}"]
+        },
+        {
+            "cmd": "retroarch",
+            "work_dir": "C:\\RetroArch-Win64",
+            "exec_bin": "retroarch.exe",
+            "exec_args": [
+                "-L",
+                "${CORE_PATH}",
+                "${ROM_PATH}",
+                "--verbose"
+            ]
+        },
+        {
+            "cmd": "mednafen",
+            "work_dir": "C:\\Users\\bossr\\Downloads\\mednafen-1.32.1-win64",
+            "exec_bin": "mednafen.exe",
+            "exec_args": ["${ROM_PATH}"]
+        }
+    ],
+    "generators": {
+        "mame": {
+            "roms_dir": "C:\\Users\\bossr\\groovymame\\groovymame_0266.221d_win-7-8-10\\roms",
+            "mamelist_path": "mamelist.json"
+        },
+        "retroarch": {
+            "playlists_dir": "C:\\RetroArch-Win64\\playlists"
+        },
+        "directories": [
+            {
+                "name": "mednafen",
+                "dir": "C:\\Users\\bossr\\Downloads\\mednafen-1.32.1-win64\\roms",
+                "extensions": ["zip", "chd"],
+                "template": {
+                    "cmd": "mednafen",
+                    "vars": {
+                        "ROM_PATH": "${ROM_FULL_PATH}"
+                    }
+                }
+            }
+        ]
+    }
+}

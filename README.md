@@ -1,36 +1,44 @@
-# GroovyMiSTerHTTP
-An HTTP client to allow remote GroovyMAME execution from MiSTer
+# GroovyMiSTerCommand
+A UDP Server to allow local Emulator execution from the remote (Groovy_MiSTer)[https://github.com/psakhis/Groovy_MiSTer] Core.
 
-Actually it's going to be done over UDP but I'm not going to rename/readdress everything yet.
+Very sincere thank you to (@psakhis)[https://github.com/psakhis].
 
-## Alpha Setup Guide
-Assumes Go is installed, and I am using WSL2 on windows so my pathing and UDP is wonky but works.
+I check the following discords somewhat frequently but not daily. \
+GroovyArcade > nogpu
+MiSTerFPGA > mister-cores > Groovy MiSTer
 
-```
-git clone git@github.com:BossRighteous/GroovyMiSTerHTTP.git
-cd GroovyMiSTerHTTP
-cp ./spec/GmcServerConfig.json ./config.json
-// Edit JSON for mame bin paths and MiSTer IP
-go run cmd/groovymisterhttp/main.go "/path/to/GroovyMiSTerHTTP/config.json"
-```
+## Installation
 
-In new terminal screen, send UDP commands to server port
-```
-echo -n '{"cmd":"mame","vars":{"MACHINE_NAME":"circus"}}' >/dev/udp/localhost/32105
+This may be run via normal go runtime commands.
 
-echo -n '{"cmd":"unload"}' >/dev/udp/localhost/32105
-```
+The releases section has builds for major platforms, let me know if you need a one-off.
+Go is very friendly to building cross-platform from source.
+
+- Download the latest release binary for your platform
+- Save to new folder (anywhere is fine)
+- Download/copy config.dist.json to the same directory as the binary.
+- Update the IP with your MiSTer's static IP or current IP
+- Update all applicable Paths for your system type. Example is Windows.
+- If using MAME generator, download mamelist.arcade-no-clone.266.json and rename as mamelist.json
+
+By default, executing with no command line args will run the server instance.
+
+There are also cli args that can be used to run GMC generator scripts
+- `GroovyMiSterCommand.exe server` - Runs server (same as no command)
+- `GroovyMiSterCommand.exe generate:retroarch` - Scans config playlists_dir for your RA playlist files, generating GMCs from each as a folder
+- `GroovyMiSterCommand.exe generate:mame` - Scans mamelist.json and cross references against your defined roms_dir for existence. This is opinionated and tries a bit of folder organization too.
+- `GroovyMiSterCommand.exe generate:directory {name}` - Uses a generic directory walker to generate GMCs by filetype. Limited to depth of 4. Can be configured for any emulator with standard filename based args. Used with mednafen as example. `"extensions": [],` will match any extension.
 
 ### Groovy MiSTer Command (GMC) spec
 
-The Groovy MiSTer core does not currently support file browsing as there are no direct roms to load.
-The following data type is a proposed file structure the Groovy core can open as a rom-like and perform
-UDP RPC commands against.
+The GroovyMiSTer core has been extended to allow loading of GMC files as if they were ROMs.
 
-```
-Filename:
+When this server handshakes with the Groovy core, the connection will allow the loading of the GMC files to broadcast to the server.
+
+The GMC file defines a whitelist of command execution strategies, as defined in the config.json
+
 {Human ReadableText Title}.gmc
-Contents: UTF-8 JSON Text
+```
 {
     "cmd": "mame",
     "vars": {
@@ -39,41 +47,24 @@ Contents: UTF-8 JSON Text
 }
 ```
 
-When the core opens the GMC file, it's contents will be streamed over UDP to the server.
-It is assumed this will be plain text, but the core will send the binary data as it. It is up
-to the server software to read and handle appropriately.
-
-This configuration is managed from the server bin via a settings JSON
+config.json
 ```
 {
-    "mister_host": "192.168.1.255",
+    ...
     "commands": [
         {
             "cmd": "mame",
             "work_dir": "/path/to/groovymame",
-            "exec_bin": "./mame",
+            "exec_bin": "mame",
             "exec_args": ["${MACHINE_NAME}"]
         }
+        ...
     ]
+    ...
 }
 ```
 
-This allows the server to easily control it's command whitelist and intented variable replacements in args.
-Since the command will be executed outside of a shell context ENV and command line variable substitution isn't possible.
-Arg/Var replacement is done by the server. This also makes it much more difficult to inject escape sequences.
-
-```
-/path/to/mybin positional -tf --foo="complex"
-
-... might become
-"cmd": "mycmd"
-"work_dir": "/path/to/",
-"exec_bin": "./mybin",
-"exec_args": ["positional", "-tf", "--foo=\"${FOO_VAL}\""]
-
-... and be executed by
-{"cmd":"mycmd", "vars":{"FOO_VAL":"custom"}}
-```
+There is a fixed relationship between the config's command execution instruction and what is required by the GMC file to fulfil the command request. The `cmd` property is how the GMC is routed to a command handler. The `vars` object values are effectively replaced into the all the `exec_args` as needed.
 
 GroovyMiSTer will know of the server by way of init beacon. Upon server boot, and every n seconds therafter,
 an init handshake will be sent to the Groovy core over UDP until the Core acknoledges.
@@ -84,74 +75,95 @@ Your GroovyMister enabled emulator will need to have it's own configuration incl
 The server will attempt to run asyncronous (long running processes) until exit or error.
 Any running processes will be terminated on receipt of the next GMC command over UDP.
 
-Messages including a stderr tail will be displayed on the MiSTer. This is under development for messaging data sources.
+Messages including a stderr tail will be displayed on the MiSTer. This is under development and honestly pretty poor at the moment.
 
-#### Groovy MiSTer UX
+### Generators
+Because the GMC spec is easily templated it's somewhat trivial to create new parsers. The `directories` generator config is a good example.
+Generators will auto-create new drectories as needed in the application dir/Groovy.
 
-psakhis has conceptually reviewed the following and may go forward with something like the following
+These files can be SCPed or otherwise transfered to your `/path/to/games/Groovy` directory like any other Core's ROMs.
 
-Similar to many other cores a load rom menu setting may be implemented:
+#### Directory Generator
 ```
-Load Remote Command *.gmc
+{
+    "name": "mednafen",
+    "dir": "C:\\Users\\bossr\\Downloads\\mednafen-1.32.1-win64\\roms",
+    "extensions": ["zip", "chd"],
+    "template": {
+        "cmd": "mednafen",
+        "vars": {
+            "ROM_PATH": "${ROM_FULL_PATH}"
+        }
+    }
+}
 ```
+- `name` acts as the CLI parameter reference as well as the folder name in resultant GMC files
+- `dir` indicates what directory to scan for files. Each being looped and created as a GMC file based on the template
+- `extensions` filters files by matching extensions. `[]` as a value allows all when you don't know specific file extensions, but this can also produce unplayable GMCs pointing to non-ROM files. Limited to 4 levels of recursion.
+- `template` This template is the schema of the resulting GMC.
 
-This will open a file browser interface, pointing to rom-like directory
+Special variables will be replaced into the `vars` object values based on the file being looped where defined.
+- `${ROM_FULL_PATH}` - Full path including absolute directory structure and filename
+- `${ROM_FULL_DIR}` - Full path to containing directory of file
+- `${ROM_RELATIVE_PATH}` - directory path and filename relative to the `dir` defined in the generator
+- `${ROM_RELATIVE_PATH}` - directory relative path to the `dir` defined in the generator
+
+#### RetroArch Generator
 ```
-/media/fat/games/Groovy/**.gmc
+"retroarch": {
+    "playlists_dir": "C:\\RetroArch-Win64\\playlists"
+},
 ```
+RetroArch is actually pretty convenient to generate GMCs for, because it does it's own indexing in the form of Playlist LPL files.
 
-Upon GMC file selection the core may
-- load binary contents up to 1024 bytes
-- Send bytes as UDP packet to acked Server socket
-- Server will manage process state and errors via text blitting back to the MiSTer
+Simply point the config to your playlists_dir and a folder will be generated for each playlist.
+Each playlist's entry will result in a single GMC file.
 
-#### File Browsing
-
-
-#### File Browsing
-I am making some assumptions here that there is a file browsing interface module the core
-can point to. There are probably opportunities to expand this or make it server-listing dependent.
-
-For now I am assuming a 1:1 file per ROM load command. In its most basic form a directory tree may be used for
-command presentation and display.
-
-Because the MAME rom list is massive I am proposing using either symlink or pure file cloning to create additional hierarchies.
+*Important Note* RetroArch via command line cannot infer the correct Core to use. Each Playlist will need a DEFAULT CORE defined in the GUI or the .lpl file itself.
 ```
-/media/fat/games/GroovyMAME/
-    Utils/
-        Unload Rom.gmc
-        Kill Server Process.gmc
-        Reboot Host Machine.gmc
-        Shutdown Host Machine.gmc
-    All Roms/
-        [Full Titles Set].gmc
+"default_core_path": "C:\\RetroArch-Win64\\cores\\mupen64plus_next_libretro.dll",
 ```
+If this is not present the playlist will be skipped.
 
-To keep the Core's command logic simplified, companion server-side scripts can be used to populate this original listing set as well as duped categorizational directories. It is unclear to me if a file browsing interface would support symlinks but <1kb file dupes even in the thousands aren't the end of the world.
-
+#### MAME Generator
 ```
-/media/fat/games/GroovyMAME/
-    Utils/...
-    All Roms/...
-    Genre/
-        Action/
-        ...
-    Year
-        1987/
-        ...
-    System
-        CPS2/
-        ...
+"mame": {
+    "roms_dir": "C:\\Users\\bossr\\groovymame\\groovymame_0266.221d_win-7-8-10\\roms",
+    "mamelist_path": "mamelist.json"
+},
 ```
 
-I've noted that .zip files are browseable as filesystem, so a single portable zip may reduce FS block fill and make the build/transfer simpler. I don't know the limits to file density in a zip but could test this.
+MAME romsets are both massive, and completely full of related/dependent rom files. Without digging in too deep I sought to provide the following:
+- Ability to categorize based on Genre, Manufacturer, Year
+- Ability to generate GMCs for playable roms where present
+- Ability to further allow filtering of wanted/unwanted roms.
 
-This would allow the server binary to run a CLI command routine that
-- Asks for category/filter preferences
-- Checks local MAME rom directory
-- Generates temp GroovyMAME/ director
-- Adds Utils and All Roms found locally based on filters
-- Dupes into category hierarchies selected.
-- zips directory
+I took an opinionated approach and first tried to source a list of playable roms parent/clone. This is viewable in `mamelist.all-playable.json`. I then used JQ to filter the set to my preferences for arcade/no-clone sets.
 
-This could then be trivially SCPed and extracted.
+Some helpful JQ
+```
+// Unique genres list
+map(.genre) | unique
+
+// Full -> Arcade
+map(select(.genre | startswith("Arcade") or startswith("Ball") or startswith("Climbing") or startswith("Driving") or startswith("Fighter") or startswith("Maze") or startswith("MultiGame") or startswith("Platform") or startswith("Puzzle") or startswith("Shooter") or startswith("Sports")))
+
+// Arcade -> no-clone
+map(select(.cloneof == "" and (.manufacturer | startswith("bootleg") | not)))
+```
+
+This gives us a bunch of these
+```
+{
+    "name": "nbajam",
+    "description": "NBA Jam (rev 3.01 4-07-93)",
+    "cloneof": "",
+    "manufacturer": "Midway",
+    "year": "1993",
+    "genre": "Sports - Basketball"
+}
+```
+
+Which allow us to create GMCs in categorical folders, referencing the machine name for the GMC Var, and the description as the filename.
+
+Your personal filtered list as `mamelist.json` will be cross-referenced against your MAME rom dir for existence as well. This allows people to generate the whole set, or use a broader mamelist.json even with only a few local ROMs.
