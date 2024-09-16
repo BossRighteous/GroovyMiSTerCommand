@@ -10,6 +10,11 @@ import (
 	"github.com/BossRighteous/GroovyMiSTerCommand/pkg/command"
 )
 
+type GroovyMiSTerCommandNoRaw struct {
+	Cmd  string            `json:"cmd"`
+	Vars map[string]string `json:"vars"`
+}
+
 func scanGlobFiles(dir string, extensions []string) ([]string, error) {
 	if len(extensions) == 0 {
 		extensions = append(extensions, "*")
@@ -51,7 +56,7 @@ func GenerateDirectoryGMCs(config command.GMCConfigDirectoryGenerator) {
 		relPath := file[len(dirPath):]
 		relDir := filepath.Dir(relPath)
 
-		gmc := command.GroovyMiSTerCommand{
+		gmc := GroovyMiSTerCommandNoRaw{
 			Cmd:  config.Template.Cmd,
 			Vars: config.Template.Vars,
 		}
