@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os/exec"
-	"strings"
 	"time"
 )
 
@@ -38,15 +37,7 @@ func (cmdr *CommandRunner) IsRunning() bool {
 }
 
 func (cmdr *CommandRunner) ReplaceArgVars(args []string, vars map[string]string) []string {
-	for i := range args {
-		arg := args[i]
-		for k, v := range vars {
-			pattern := "${" + k + "}"
-			arg = strings.Replace(arg, pattern, v, -1)
-		}
-		args[i] = arg
-	}
-	return args
+	return ReplaceArgVars(args, vars)
 }
 
 func (cmdr *CommandRunner) Run(gmc GroovyMiSTerCommand) RunResult {

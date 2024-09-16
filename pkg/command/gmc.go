@@ -1,6 +1,9 @@
 package command
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 type GroovyMiSTerCommand struct {
 	Cmd  string            `json:"cmd"`
@@ -14,4 +17,16 @@ func ParseGMC(cmdBytes []byte) (GroovyMiSTerCommand, error) {
 	}
 	err := json.Unmarshal(cmdBytes, &cmd)
 	return cmd, err
+}
+
+func ReplaceArgVars(args []string, vars map[string]string) []string {
+	for i := range args {
+		arg := args[i]
+		for k, v := range vars {
+			pattern := "${" + k + "}"
+			arg = strings.Replace(arg, pattern, v, -1)
+		}
+		args[i] = arg
+	}
+	return args
 }

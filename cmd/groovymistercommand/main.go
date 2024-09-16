@@ -36,7 +36,11 @@ func main() {
 	} else if runType == "generate:mame" {
 		runGenerateMAME(config)
 	} else if runType == "generate:directory" {
-		runGenerateMednafen(config)
+		if len(os.Args) <= 2 {
+			fmt.Println("Missing directory name")
+			return
+		}
+		runGenerateDirectory(config, os.Args[2])
 	} else {
 		fmt.Println("Unknown Command, exiting")
 	}
@@ -50,8 +54,17 @@ func runGenerateMAME(config *command.GMCConfig) {
 	generators.GenerateMameGMCs(config.Generators.Mame)
 }
 
-func runGenerateMednafen(_ *command.GMCConfig) {
-	fmt.Println("generate:mednafen not yet implemented")
+func runGenerateDirectory(config *command.GMCConfig, name string) {
+	found := false
+	for _, dir := range config.Generators.Directories {
+		if dir.Name == name {
+			found = true
+			generators.GenerateDirectoryGMCs(dir)
+		}
+	}
+	if !found {
+		log.Fatal("No matching directory config found")
+	}
 }
 
 func runServer(config *command.GMCConfig) {

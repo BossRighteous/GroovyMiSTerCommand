@@ -22,15 +22,16 @@ type GMCConfigRetroarchGenerator struct {
 }
 
 type GMCConfigDirectoryGenerator struct {
-	Dir               string   `json:"dir"`
-	Recursive         bool     `json:"recursive"`
-	ExcludeExtensions []string `json:"exclude_extensions"`
+	Name       string              `json:"name"`
+	Dir        string              `json:"dir"`
+	Extensions []string            `json:"extensions"`
+	Template   GroovyMiSTerCommand `json:"template"`
 }
 
 type GMCConfigGenerators struct {
-	Mame      GMCConfigMameGenerator      `json:"mame"`
-	Retroarch GMCConfigRetroarchGenerator `json:"retroarch"`
-	Directory GMCConfigDirectoryGenerator `json:"directory"`
+	Mame        GMCConfigMameGenerator        `json:"mame"`
+	Retroarch   GMCConfigRetroarchGenerator   `json:"retroarch"`
+	Directories []GMCConfigDirectoryGenerator `json:"directories"`
 }
 
 type GMCConfig struct {
