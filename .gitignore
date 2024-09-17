@@ -23,6 +23,7 @@ go.work.sum
 
 cmd/cmdtest
 cmd/romparser
+cmd/groovymistercommand/build
 Groovy
 dev-notes.txt
 config.json

@@ -26,7 +26,9 @@ func main() {
 
 	config, err := command.LoadConfigFromPath(configPath)
 	if err != nil {
-		log.Fatal("Config could not be loaded from path argument")
+		fmt.Println("Config could not be loaded from path argument")
+		time.Sleep(time.Second * 3)
+		return
 	}
 
 	if runType == "server" {

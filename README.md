@@ -23,6 +23,8 @@ Go is very friendly to building cross-platform from source.
 
 By default, executing with no command line args will run the server instance.
 
+If you run the exe from Windows Explorer and it silently fails, check your config.json exists. Seems to fail before the go terminal loads.
+
 There are also cli args that can be used to run GMC generator scripts
 - `GroovyMiSterCommand.exe server` - Runs server (same as no command)
 - `GroovyMiSterCommand.exe generate:retroarch` - Scans config playlists_dir for your RA playlist files, generating GMCs from each as a folder
