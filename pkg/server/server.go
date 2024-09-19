@@ -14,7 +14,7 @@ type UdpClient struct {
 }
 
 func (client *UdpClient) SendBeacon() {
-	fmt.Println("Sending Beacon")
+	fmt.Println("Sending Beacon to", client.addr)
 	_, err := client.conn.WriteTo([]byte{0}, client.addr)
 	if err != nil {
 		fmt.Println("UDP BEACON ERROR", err)

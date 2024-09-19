@@ -1,5 +1,6 @@
 {
     "mister_host": "192.168.0.169",
+    "display_messages": true,
     "commands": [
         {
             "cmd": "mame",

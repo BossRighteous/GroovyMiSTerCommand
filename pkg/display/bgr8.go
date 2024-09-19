@@ -1,7 +1,6 @@
 package display
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"math/bits"
@@ -83,13 +82,10 @@ func ColorToBGR8(c color.Color) ColorBGR8 {
 		return co
 	}
 	r, g, b, a := c.RGBA()
-	fmt.Println(r, g, b, a)
 	if a == 0xffff {
-		fmt.Println("full alpha")
 		return ColorBGR8{uint8(b >> 8), uint8(g >> 8), uint8(r >> 8)}
 	}
 	if a == 0 {
-		fmt.Println("no alpha")
 		return ColorBGR8{0, 0, 0}
 	}
 	// Since Color.RGBA returns an alpha-premultiplied color, we should have r <= a && g <= a && b <= a.
@@ -97,7 +93,6 @@ func ColorToBGR8(c color.Color) ColorBGR8 {
 	g = (g * 0xffff) / a
 	b = (b * 0xffff) / a
 
-	fmt.Println(ColorBGR8{uint8(b >> 8), uint8(g >> 8), uint8(r >> 8)})
 	return ColorBGR8{uint8(b >> 8), uint8(g >> 8), uint8(r >> 8)}
 }
 

@@ -83,7 +83,10 @@ func runServer(config *command.GMCConfig) {
 	freq, _ := time.ParseDuration("2s")
 	beaconTicker := time.NewTicker(time.Duration(freq))
 
-	disp := display.NewMiSTerDisplay(misterHost)
+	var disp *display.MiSTerDisplay
+	if config.DisplayMessages {
+		disp = display.NewMiSTerDisplay(misterHost)
+	}
 
 	for {
 		select {
@@ -92,8 +95,8 @@ func runServer(config *command.GMCConfig) {
 				server.SendBeacon()
 			}
 		case res := <-cmdr.ResultChan:
-			fmt.Println(res)
-			if res.BlitMessage {
+			fmt.Println("Process Result: ", res)
+			if res.BlitMessage && disp != nil {
 				if len(res.MessageLines) > 0 {
 					disp.BlitText(res.MessageLines)
 				} else if res.Message != "" {
@@ -103,10 +106,13 @@ func runServer(config *command.GMCConfig) {
 				}
 			}
 		case cmd := <-cmdChan:
-			disp.SafeClose()
-			fmt.Println(cmd.Raw)
+			if disp != nil {
+				disp.SafeClose()
+			}
+			//fmt.Println(cmd.Raw)
 			res := cmdr.Run(cmd)
-			if res.BlitMessage {
+			fmt.Println("Process Result: ", res)
+			if res.BlitMessage && disp != nil {
 				if len(res.MessageLines) > 0 {
 					disp.BlitText(res.MessageLines)
 				} else {

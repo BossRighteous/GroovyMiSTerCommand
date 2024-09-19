@@ -26,7 +26,8 @@ func (client *UdpDisplayClient) SendPacket(buffer []byte) {
 	//fmt.Println("Sending Packet length", len(buffer))
 	_, err := client.conn.WriteTo(buffer, client.addr)
 	if err != nil {
-		panic(err)
+		fmt.Println("Connection Error (Close):", err)
+		client.conn.Close()
 	}
 }
 
@@ -96,7 +97,7 @@ func (client *UdpDisplayClient) Close() {
 func (client *UdpDisplayClient) Open() {
 	conn, err := net.ListenPacket("udp4", ":32100")
 	if err != nil {
-		panic(err)
+		fmt.Println("Connection Error (Open):", err)
 	}
 	client.conn = conn
 }
@@ -104,10 +105,6 @@ func (client *UdpDisplayClient) Open() {
 func NewUdpClient(host string) *UdpDisplayClient {
 	var client UdpDisplayClient
 	client.host = host
-	/*conn, err := net.ListenPacket("udp4", ":32100")
-	if err != nil {
-		panic(err)
-	}*/
 	addr, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:32100", host))
 	if err != nil {
 		panic(err)

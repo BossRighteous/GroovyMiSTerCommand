@@ -7,6 +7,14 @@ import (
 	"time"
 )
 
+type ProcessStateError struct {
+	e string
+}
+
+func (err *ProcessStateError) Error() string {
+	return err.e
+}
+
 type RunResult struct {
 	Code         int
 	Message      string
@@ -22,12 +30,19 @@ type CommandRunner struct {
 
 func (cmdr *CommandRunner) Cancel() error {
 	if cmdr.Cmd != nil {
-		fmt.Println("killing process")
-		err := cmdr.Cmd.Process.Kill()
+		if cmdr.Cmd.Process != nil {
+			fmt.Println("Killing running process")
+			err := cmdr.Cmd.Process.Kill()
+			//return cmdr.Cmd.Process.Signal(syscall.SIGTERM)
+			time.Sleep(time.Millisecond * 250)
+			return err
+		} else if cmdr.Cmd.ProcessState != nil {
+			fmt.Println("Process already completed, cleaning up")
+			fmt.Println(cmdr.Cmd.ProcessState)
+			cmdr.Cmd = nil
+			return &ProcessStateError{e: cmdr.Cmd.ProcessState.String()}
+		}
 		cmdr.Cmd = nil
-		time.Sleep(time.Millisecond * 250)
-
-		return err
 	}
 	return nil
 }

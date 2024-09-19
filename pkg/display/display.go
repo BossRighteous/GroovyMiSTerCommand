@@ -19,9 +19,9 @@ type MiSTerDisplay struct {
 }
 
 func (disp *MiSTerDisplay) SafeClose() {
-	fmt.Println("SafeClose")
+	fmt.Println("Display: SafeClose")
 	if disp.IsRunning {
-		fmt.Println("Running close seq")
+		fmt.Println("Display: Running close seq")
 		disp.Ticker.Stop()
 		disp.Timer.Stop()
 		disp.IsRunning = false
@@ -31,9 +31,9 @@ func (disp *MiSTerDisplay) SafeClose() {
 }
 
 func (disp *MiSTerDisplay) SafeOpen() {
-	fmt.Println("SafeOpen")
+	fmt.Println("Display: SafeOpen")
 	if !disp.IsRunning {
-		fmt.Println("Running open seq")
+		fmt.Println("Display: Running open seq")
 		disp.IsRunning = true
 		disp.Client.Open()
 		disp.Client.CmdInit()
@@ -44,7 +44,7 @@ func (disp *MiSTerDisplay) SafeOpen() {
 }
 
 func (disp *MiSTerDisplay) BlitText(txt []string) {
-	fmt.Println("starting broadcast for 5s")
+	fmt.Println("Display: starting text broadcast for 5s")
 	disp.SafeOpen()
 	disp.Timer.Reset(TimerDuration)
 	disp.Frame = TextToBGR8(txt)
@@ -72,7 +72,9 @@ func NewMiSTerDisplay(host string) *MiSTerDisplay {
 			case <-disp.Timer.C:
 				disp.SafeClose()
 			case <-disp.Ticker.C:
-				disp.Client.CmdBlit(disp.Frame.Pix)
+				if disp.IsRunning {
+					disp.Client.CmdBlit(disp.Frame.Pix)
+				}
 			}
 		}
 	}()

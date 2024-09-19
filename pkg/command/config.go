@@ -35,10 +35,11 @@ type GMCConfigGenerators struct {
 }
 
 type GMCConfig struct {
-	MisterHost string              `json:"mister_host"`
-	Commands   []GMCConfigCommand  `json:"commands"`
-	Generators GMCConfigGenerators `json:"generators"`
-	CmdMap     map[string]GMCConfigCommand
+	MisterHost      string              `json:"mister_host"`
+	DisplayMessages bool                `json:"display_messages"`
+	Commands        []GMCConfigCommand  `json:"commands"`
+	Generators      GMCConfigGenerators `json:"generators"`
+	CmdMap          map[string]GMCConfigCommand
 }
 
 func LoadConfigFromPath(path string) (*GMCConfig, error) {
