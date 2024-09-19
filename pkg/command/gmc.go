@@ -20,13 +20,14 @@ func ParseGMC(cmdBytes []byte) (GroovyMiSTerCommand, error) {
 }
 
 func ReplaceArgVars(args []string, vars map[string]string) []string {
+	nArgs := make([]string, len(args))
 	for i := range args {
 		arg := args[i]
 		for k, v := range vars {
 			pattern := "${" + k + "}"
 			arg = strings.Replace(arg, pattern, v, -1)
 		}
-		args[i] = arg
+		nArgs[i] = arg
 	}
-	return args
+	return nArgs
 }
