@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"time"
 )
 
@@ -76,7 +77,10 @@ func (cmdr *CommandRunner) Run(gmc GroovyMiSTerCommand) RunResult {
 	}
 
 	args := cmdr.ReplaceArgVars(cfgCmd.ExecArgs, gmc.Vars)
-	cmd := exec.Command(cfgCmd.ExecBin, args...)
+
+	fmt.Println(cfgCmd.WorkDir, cfgCmd.ExecBin, args)
+	bin := filepath.Join(cfgCmd.WorkDir, cfgCmd.ExecBin)
+	cmd := exec.Command(bin, args...)
 	cmdr.Cmd = cmd
 	if cfgCmd.WorkDir != "" {
 		cmd.Dir = cfgCmd.WorkDir
