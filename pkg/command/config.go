@@ -3,6 +3,7 @@ package command
 import (
 	"encoding/json"
 	"os"
+	"strings"
 )
 
 type GMCConfigCommand struct {
@@ -36,6 +37,8 @@ type GMCConfigGenerators struct {
 
 type GMCConfig struct {
 	MisterHost      string              `json:"mister_host"`
+	ExitStrategy    string              `json:"exit_strategy"`
+	ExitPauseMs     int                 `json:"exit_pause_ms"`
 	DisplayMessages bool                `json:"display_messages"`
 	Commands        []GMCConfigCommand  `json:"commands"`
 	Generators      GMCConfigGenerators `json:"generators"`
@@ -63,6 +66,17 @@ func LoadConfigFromPath(path string) (*GMCConfig, error) {
 		Cmd:      "unload",
 		ExecBin:  "echo",
 		ExecArgs: []string{""},
+	}
+
+	// Defaults
+	if config.ExitPauseMs <= 0 {
+		config.ExitPauseMs = 255
+	}
+
+	// Kill is most aggressive and should only be used as override
+	config.ExitStrategy = strings.ToLower(config.ExitStrategy)
+	if config.ExitStrategy != "kill" {
+		config.ExitStrategy = "quit"
 	}
 
 	return &config, nil

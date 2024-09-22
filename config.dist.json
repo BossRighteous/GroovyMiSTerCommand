@@ -1,5 +1,7 @@
 {
-    "mister_host": "192.168.0.169",
+    "mister_host": "192.168.0.168",
+    "exit_strategy": "kill|quit",
+    "exit_pause_ms": 250,
     "display_messages": true,
     "commands": [
         {

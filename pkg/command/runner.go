@@ -32,10 +32,9 @@ type CommandRunner struct {
 func (cmdr *CommandRunner) Cancel() error {
 	if cmdr.Cmd != nil {
 		if cmdr.Cmd.Process != nil {
-			fmt.Println("Killing running process")
-			err := cmdr.Cmd.Process.Kill()
-			//return cmdr.Cmd.Process.Signal(syscall.SIGTERM)
-			time.Sleep(time.Millisecond * 250)
+			fmt.Println("Terminating running process:", cmdr.Config.ExitStrategy)
+			err := CloseProcess(cmdr.Cmd.Process, cmdr.Config.ExitStrategy)
+			time.Sleep(time.Millisecond * time.Duration(cmdr.Config.ExitPauseMs))
 			return err
 		} else if cmdr.Cmd.ProcessState != nil {
 			fmt.Println("Process already completed, cleaning up")
