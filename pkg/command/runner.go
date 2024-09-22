@@ -85,7 +85,7 @@ func (cmdr *CommandRunner) Run(gmc GroovyMiSTerCommand) RunResult {
 		cmd.Dir = cfgCmd.WorkDir
 	}
 
-	stdout, _ := cmd.StderrPipe()
+	stdout, _ := cmd.StdoutPipe()
 	scanner := bufio.NewScanner(stdout)
 	outLines := make([]string, 10)
 	err := cmd.Start()
